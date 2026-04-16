@@ -16,8 +16,8 @@ define space register type=register_space size=2;
 
 #--------------------------------------------------------------------------
 # Registers
-                                   #0 2 4 6 8  a  c  e  10 12 14 16    18    1a   1c 1e 20  22 24
-define register offset=0x0 size=2 [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  D  AR2 SE X R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30 R31];
+                               #oct 0 1 2 3 4  5  6  7  10 11 12 13    14    15   16 17 20    21    22    23    24 25 26 27 30  31  32  33  34  35  36  37
+define register offset=0x0 size=2 [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  D  AR2_0 AR2_1 AR2_2 AR2_3 SE X1 X2 X3 R24 R25 R26 R27 R28 R29 R30 R31];
 
 # helper locations
 define register offset=0x40 size=2  [ loc ];
@@ -62,15 +62,15 @@ define token memory_reference(16)
   addr = (0,9) signed  # address
 ;
 
-                             # 0 1 2 3 4  5  6  7  8  9  10 11    12    13   14 15 16  17 18 19  20  21  22  23  24  25  26  27  28  29  30  31
-attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  D  AR2 SE X  R19 R20 R21 R22 R23 R24 R25 R26 R27 R28 R29 R30 R31];
+                             # 0 1 2 3 4  5  6  7  8  9  10 11    12    13   14 15 16    17    18    19    20 21 22 23 24  25  26  27  28  29  30  31
+attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  D  AR2_0 AR2_1 AR2_2 AR2_3 SE X1 X2 X3 R24 R25 R26 R27 R28 R29 R30 R31];
 
 # base page, direct
 memref: regaddr      is raddr=0  & regaddr & page=0 & di=0 { ptr:2 = regaddr;    export ptr; }
 memref: addr         is raddr!=0 & addr    & page=0 & di=0 { ptr:2 = addr;       export *[ram]:2 ptr; }
 # base page, indirect
 memref: regaddr^",I" is raddr=0  & regaddr & page=0 & di=1 { ptr:2 = *regaddr:2; export ptr; }
-memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;    export ptr; }
+memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;    export *[ram]:2 ptr; }
 
 # About direct page addressing:
 #  However, the least 10 bits produces by the assembler and placed in the
@@ -83,7 +83,7 @@ memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;   
 # current page, direct
 memref: loc      is addr & page=1 & di=0 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (0x200 - (addr & 0x200)); ] { ptr:2 = loc;    export *[ram]:2 ptr; }
 # current page, indirect
-memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (0x200 - (addr & 0x200)); ] { ptr:2 = *loc:2; export ptr; }
+memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (0x200 - (addr & 0x200)); ] { ptr:2 = *loc:2; export *[ram]:2 ptr; }
 
 # LDA A == NOP
 :NOP is opcode=0 unimpl
@@ -94,8 +94,8 @@ memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr &
 :CPB memref is op_mem=3 & memref { if (B != memref) goto inst_next2; }
 :ADA memref is op_mem=4 & memref { A = A + memref; }
 :ADB memref is op_mem=5 & memref { B = B + memref; }
-:STA memref is op_mem=6 & memref { *memref = A; }
-:STB memref is op_mem=7 & memref { *memref = B; }
+:STA memref is op_mem=6 & memref { memref = A; }
+:STB memref is op_mem=7 & memref { memref = B; }
 :JSM memref is op_mem=8 & memref { R = R + 1; *R:2 = P; call [memref]; }
 :ISZ memref is op_mem=9 & memref { local tmp:2 = memref + 1; *memref:2 = tmp; if (tmp == 0) goto inst_next2; }
 :AND memref is op_mem=10 & memref { A = A & memref; }
