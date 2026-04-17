@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<processor_spec>
+  <programcounter register="P"/>
+  <default_symbols>
+    <symbol name="A" address="0"/>
+    <symbol name="B" address="1"/>
+    <symbol name="P" address="2"/>
+    <symbol name="R" address="3"/>
+    <symbol name="Reset" address="20"/>
+  </default_symbols>
+  <default_memory_blocks>
+     <memory_block name="REGISTERS" start_address="0x0000" length="0x08" initialized="false"/>
+  </default_memory_blocks>
+</processor_spec>

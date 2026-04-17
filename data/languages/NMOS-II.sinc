@@ -15,9 +15,17 @@ define space ram      type=ram_space      size=2  wordsize=2 default;
 define space register type=register_space size=2;
 
 #--------------------------------------------------------------------------
-# Registers
+
+@if defined(BPC)
+# BPC-only registers
+define register offset=0x0 size=2 [ A B P R ];
+@endif
+
+@if defined(HYBRID)
+# Full hybrid registers
                                #oct 0 1 2 3 4  5  6  7  10 11 12 13    14    15   16 17 20    21    22    23    24 25 26 27 30  31  32  33  34  35  36  37
 define register offset=0x0 size=2 [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  D  AR2_0 AR2_1 AR2_2 AR2_3 SE X1 X2 X3 R24 R25 R26 R27 R28 R29 R30 R31];
+@endif
 
 # helper locations
 define register offset=0x40 size=2  [ loc ];
@@ -26,7 +34,7 @@ define register offset=0x40 size=2  [ loc ];
 define register offset=0x42 size=1  [ bits ];
 
 # condition flags
-define register offset=0x50 size=1   [ DC_F HLT_F FLG_F STS_F OV_F ];
+define register offset=0x50 size=1   [ DC_F HLT_F FLG_F STS_F OV_F REG_E ];
 
 #--------------------------------------------------------------------------
 # Macros
@@ -58,12 +66,24 @@ define token memory_reference(16)
   op_exe = (5,14)
   page = (10,10) # base / current page
   raddr = (5,9) # register if direct, base page, and raddr == 0
+@if defined(BPC)
+  regaddr = (0,1) # attach variables !
+  mbz = (2,4) # must be zero
+@endif
+@if defined(HYBRID)
   regaddr = (0,4) # attach variables !
+@endif
   addr = (0,9) signed  # address
 ;
 
+@if defined(BPC)
+attach variables [ regaddr ] [ A B P R ];
+@endif
+
+@if defined(HYBRID)
                              # 0 1 2 3 4  5  6  7  8  9  10 11    12    13   14 15 16    17    18    19    20 21 22 23 24  25  26  27  28  29  30  31
 attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  D  AR2_0 AR2_1 AR2_2 AR2_3 SE X1 X2 X3 R24 R25 R26 R27 R28 R29 R30 R31];
+@endif
 
 # base page, direct
 memref: regaddr      is raddr=0  & regaddr & page=0 & di=0 { ptr:2 = regaddr;    export ptr; }
@@ -80,10 +100,11 @@ memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;   
 #  This induces a one-half page offset whose effect is to make current page
 #  addressing relative to the middle of the page.
 
-# PC-relative, current page, direct
-memref: loc      is addr & page=1 & di=0 [ loc = (inst_start + addr); ] { ptr:2 = loc;    export *:2 ptr; }
-# PC-relative, current page, indirect
-memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start + addr); ] { ptr:2 = *loc:2; export *:2 ptr; }
+# current page, direct
+#                                                 drop lower 10 bits      use lower bits      from middle of page
+memref: loc      is addr & page=1 & di=0 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (~(addr & 0x200)); ] { ptr:2 = loc;    export *:2 ptr; }
+# current page, indirect
+memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (~(addr & 0x200)); ] { ptr:2 = *loc:2; export *:2 ptr; }
 
 # LDA A == NOP
 :NOP is opcode=0 unimpl
@@ -223,9 +244,9 @@ macro alter_and_skip(val,mask,xor,cs,target) {
 # skip if overflow
 :SOC atarget^hcs is op815=0xf6 & atarget & hcs { alter_and_skip(OV_F,0x0001,0x0000,hcs,atarget); }
 :SOS atarget^hcs is op815=0xf7 & atarget & hcs { alter_and_skip(OV_F,0x0001,0x0000,hcs,atarget); }
-# skip if extend
-:SEC atarget^hcs is op815=0xfe & atarget & hcs { alter_and_skip(SE,0xf,0,hcs,atarget); }
-:SES atarget^hcs is op815=0xff & atarget & hcs { alter_and_skip(SE,0xf,0xf,hcs,atarget); }
+# skip if extend register
+:SEC atarget^hcs is op815=0xfe & atarget & hcs { alter_and_skip(REG_E,0xf,0,hcs,atarget); }
+:SES atarget^hcs is op815=0xff & atarget & hcs { alter_and_skip(REG_E,0xf,0xf,hcs,atarget); }
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # IOC only

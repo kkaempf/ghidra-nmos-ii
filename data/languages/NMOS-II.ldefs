@@ -4,13 +4,25 @@
   <language processor="NMOS-II"
             endian="big"
             size="16"
-            variant="default"
+            variant="Full hybrid"
             version="1.0"
-            slafile="NMOS-II.sla"
-            processorspec="NMOS-II.pspec"
+            slafile="NMOS-II-hybrid.sla"
+            processorspec="NMOS-II-hybrid.pspec"
             manualindexfile="../manuals/NMOS-II.idx"
-            id="NMOS-II:BE:16:default">
+            id="NMOS-II:BE:16:hybrid">
     <description>HP NMOS-II</description>
-    <compiler name="default" spec="NMOS-II.cspec" id="default"/>
+    <compiler name="hybrid" spec="NMOS-II.cspec" id="hybrid"/>
+  </language>
+  <language processor="NMOS-II"
+            endian="big"
+            size="16"
+            variant="BPC only"
+            version="1.0"
+            slafile="NMOS-II-bpc.sla"
+            processorspec="NMOS-II-bpc.pspec"
+            manualindexfile="../manuals/NMOS-II.idx"
+            id="NMOS-II:BE:16:bpc">
+    <description>HP NMOS-II</description>
+    <compiler name="bpc" spec="NMOS-II.cspec" id="bpc"/>
   </language>
 </language_definitions>

@@ -1,0 +1,3 @@
+@define HYBRID ""
+
+@include "NMOS-II.sinc"
