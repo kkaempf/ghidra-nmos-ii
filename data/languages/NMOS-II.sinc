@@ -54,6 +54,22 @@ macro rotate_right(value) {
   value = value | (lowbit << 15);
 }
 
+macro eval_and_skip_nz(expr,target) {
+  if (expr != 0) goto <skip>;
+  goto <continue>;
+<skip>
+  goto [target];
+<continue>
+}
+
+macro eval_and_skip_z(expr,target) {
+  if (expr == 0) goto <skip>;
+  goto <continue>;
+<skip>
+  goto [target];
+<continue>
+}
+
 #--------------------------------------------------------------------------
 # Mnemonics
 
@@ -170,22 +186,22 @@ shift: bits is count [ bits = count + 1; ] { export *[const]:1 bits; }
 # skip target
 starget: loc is skip [ loc = inst_start + skip; ] { ptr:2 = loc; export *:2 ptr; }
 
-:RZA starget is op1215=7 & op911=2 & op68=0 & starget { if (A != 0) goto starget; }
-:RZB starget is op1215=7 & op911=6 & op68=0 & starget { if (B != 0) goto starget; }
-:SZA starget is op1215=7 & op911=2 & op68=4 & starget { if (A == 0) goto starget; }
-:SZB starget is op1215=7 & op911=6 & op68=4 & starget { if (B == 0) goto starget; }
-:RIA starget is op1215=7 & op911=2 & op68=1 & starget { local tmp:2 = A; A = A + 1; if (tmp != 0) goto starget; }
-:RIB starget is op1215=7 & op911=6 & op68=1 & starget { local tmp:2 = B; B = B + 1; if (tmp != 0) goto starget; }
-:SIA starget is op1215=7 & op911=2 & op68=5 & starget { local tmp:2 = A; A = A + 1; if (tmp == 0) goto starget; }
-:SIB starget is op1215=7 & op911=6 & op68=5 & starget { local tmp:2 = B; B = B + 1; if (tmp == 0) goto starget; }
-:SFS starget is op1215=7 & op911=2 & op68=2 & starget { if (FLG_F != 0) goto starget; }
-:SFC starget is op1215=7 & op911=2 & op68=6 & starget { if (FLG_F == 0) goto starget; }
-:SSS starget is op1215=7 & op911=6 & op68=2 & starget { if (STS_F != 0) goto starget; }
-:SSC starget is op1215=7 & op911=6 & op68=6 & starget { if (STS_F == 0) goto starget; }
-:SDS starget is op1215=7 & op911=2 & op68=3 & starget { if (DC_F != 0) goto starget; }
-:SDC starget is op1215=7 & op911=2 & op68=7 & starget { if (DC_F == 0) goto starget; }
-:SHS starget is op1215=7 & op911=6 & op68=3 & starget { if (HLT_F != 0) goto starget; }
-:SHC starget is op1215=7 & op911=6 & op68=7 & starget { if (HLT_F == 0) goto starget; }
+:RZA starget is op1215=7 & op911=2 & op68=0 & starget { eval_and_skip_nz(A,starget); }
+:RZB starget is op1215=7 & op911=6 & op68=0 & starget { eval_and_skip_nz(B,starget); }
+:SZA starget is op1215=7 & op911=2 & op68=4 & starget { eval_and_skip_z(A,starget); }
+:SZB starget is op1215=7 & op911=6 & op68=4 & starget { eval_and_skip_z(B,starget); }
+:RIA starget is op1215=7 & op911=2 & op68=1 & starget { local tmp:2 = A; A = A + 1; eval_and_skip_nz(tmp,starget); }
+:RIB starget is op1215=7 & op911=6 & op68=1 & starget { local tmp:2 = B; B = B + 1; eval_and_skip_nz(tmp,starget); }
+:SIA starget is op1215=7 & op911=2 & op68=5 & starget { local tmp:2 = A; A = A + 1; eval_and_skip_z(tmp,starget); }
+:SIB starget is op1215=7 & op911=6 & op68=5 & starget { local tmp:2 = B; B = B + 1; eval_and_skip_z(tmp,starget); }
+:SFS starget is op1215=7 & op911=2 & op68=2 & starget { eval_and_skip_nz(FLG_F,starget); }
+:SFC starget is op1215=7 & op911=2 & op68=6 & starget { eval_and_skip_z(FLG_F,starget); }
+:SSS starget is op1215=7 & op911=6 & op68=2 & starget { eval_and_skip_nz(STS_F,starget); }
+:SSC starget is op1215=7 & op911=6 & op68=6 & starget { eval_and_skip_z(STS_F,starget); }
+:SDS starget is op1215=7 & op911=2 & op68=3 & starget { eval_and_skip_nz(DC_F,starget); }
+:SDC starget is op1215=7 & op911=2 & op68=7 & starget { eval_and_skip_z(DC_F,starget); }
+:SHS starget is op1215=7 & op911=6 & op68=3 & starget { eval_and_skip_nz(HLT_F,starget); }
+:SHC starget is op1215=7 & op911=6 & op68=7 & starget { eval_and_skip_z(HLT_F,starget); }
 
 # -- return
 
