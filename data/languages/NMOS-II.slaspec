@@ -67,10 +67,10 @@ attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  
 
 # base page, direct
 memref: regaddr      is raddr=0  & regaddr & page=0 & di=0 { ptr:2 = regaddr;    export ptr; }
-memref: addr         is raddr!=0 & addr    & page=0 & di=0 { ptr:2 = addr;       export *[ram]:2 ptr; }
+memref: addr         is raddr!=0 & addr    & page=0 & di=0 { ptr:2 = addr;       export *:2 ptr; }
 # base page, indirect
 memref: regaddr^",I" is raddr=0  & regaddr & page=0 & di=1 { ptr:2 = *regaddr:2; export ptr; }
-memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;    export *[ram]:2 ptr; }
+memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;    export *:2 ptr; }
 
 # About direct page addressing:
 #  However, the least 10 bits produces by the assembler and placed in the
@@ -80,13 +80,15 @@ memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;   
 #  This induces a one-half page offset whose effect is to make current page
 #  addressing relative to the middle of the page.
 
-# current page, direct
-memref: loc      is addr & page=1 & di=0 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (0x200 - (addr & 0x200)); ] { ptr:2 = loc;    export *[ram]:2 ptr; }
-# current page, indirect
-memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (0x200 - (addr & 0x200)); ] { ptr:2 = *loc:2; export *[ram]:2 ptr; }
+# PC-relative, current page, direct
+memref: loc      is addr & page=1 & di=0 [ loc = (inst_start + addr); ] { ptr:2 = loc;    export *:2 ptr; }
+# PC-relative, current page, indirect
+memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start + addr); ] { ptr:2 = *loc:2; export *:2 ptr; }
 
 # LDA A == NOP
 :NOP is opcode=0 unimpl
+
+# -- memory reference
 
 :LDA memref is op_mem=0 & memref { A = memref; }
 :LDB memref is op_mem=1 & memref { B = memref; }
@@ -135,10 +137,10 @@ shift: bits is count [ bits = count + 1; ] { export *[const]:1 bits; }
 :RAR shift is op1215=0xf & op911=0 & op68 = 7 & op45 = 0 & shift { rotate_right(A); }
 :RBR shift is op1215=0xf & op911=4 & op68 = 7 & op45 = 0 & shift { rotate_right(B); }
 
-# -- skip
+# -- skip -32..31 instructions
 
 # skip target
-starget: loc is skip [ loc = inst_start + skip; ] { ptr:2 = loc; export *[ram]:2 ptr; }
+starget: loc is skip [ loc = inst_start + skip; ] { ptr:2 = loc; export *:2 ptr; }
 
 :RZA starget is op1215=7 & op911=2 & op68=0 & starget { if (A != 0) goto starget; }
 :RZB starget is op1215=7 & op911=6 & op68=0 & starget { if (B != 0) goto starget; }
@@ -219,8 +221,8 @@ macro alter_and_skip(val,mask,xor,cs,target) {
 :SAM atarget^hcs is op815=0xf5 & atarget & hcs { alter_and_skip(A,0x8000,0x0000,hcs,atarget); }
 :SBM atarget^hcs is op815=0xfd & atarget & hcs { alter_and_skip(B,0x8000,0x0000,hcs,atarget); }
 # skip if overflow
-:SOC atarget^hcs is op815=0xf6 & atarget & hcs { alter_and_skip(OV_F,1,0,hcs,atarget); }
-:SOS atarget^hcs is op815=0xf7 & atarget & hcs { alter_and_skip(OV_F,1,1,hcs,atarget); }
+:SOC atarget^hcs is op815=0xf6 & atarget & hcs { alter_and_skip(OV_F,0x0001,0x0000,hcs,atarget); }
+:SOS atarget^hcs is op815=0xf7 & atarget & hcs { alter_and_skip(OV_F,0x0001,0x0000,hcs,atarget); }
 # skip if extend
 :SEC atarget^hcs is op815=0xfe & atarget & hcs { alter_and_skip(SE,0xf,0,hcs,atarget); }
 :SES atarget^hcs is op815=0xff & atarget & hcs { alter_and_skip(SE,0xf,0xf,hcs,atarget); }
