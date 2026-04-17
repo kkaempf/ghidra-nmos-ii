@@ -61,19 +61,19 @@ macro rotate_right(value) {
 
 define token memory_reference(16)
   opcode = (0,15)
-  di = (15,15)   # direct / indirect
+  indirect = (15,15)   # direct / indirect
   op_mem = (11,14)  # instruction
   op_exe = (5,14)
-  page = (10,10) # base / current page
-  raddr = (5,9) # register if direct, base page, and raddr == 0
+  current_page = (10,10) # base / current page
 @if defined(BPC)
-  regaddr = (0,1) # attach variables !
-  mbz = (2,4) # must be zero
+  memaddr = (2,9) # if != 0, we're outside the register range
+  regaddr = (0,1) # register range
 @endif
 @if defined(HYBRID)
-  regaddr = (0,4) # attach variables !
+  memaddr = (5,9) # if != 0, we're outside the register range
+  regaddr = (0,4) # register range
 @endif
-  addr = (0,9) signed  # address
+  addr = (0,9) signed  # address offset
 ;
 
 @if defined(BPC)
@@ -86,14 +86,20 @@ attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  
 @endif
 
 # base page, direct
-memref: regaddr      is raddr=0  & regaddr & page=0 & di=0 { ptr:2 = regaddr;    export ptr; }
-memref: addr         is raddr!=0 & addr    & page=0 & di=0 { ptr:2 = addr;       export *:2 ptr; }
+#   register reference
+memref: regaddr      is memaddr =0 & regaddr & current_page=0 & indirect=0 { ptr:2 = regaddr;    export ptr; }
+#   memory reference
+memref: addr         is memaddr!=0 & addr    & current_page=0 & indirect=0 { ptr:2 = addr;       export *:2 ptr; }
 # base page, indirect
-memref: regaddr^",I" is raddr=0  & regaddr & page=0 & di=1 { ptr:2 = *regaddr:2; export ptr; }
-memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;    export *:2 ptr; }
+memref: regaddr^",I" is memaddr =0 & regaddr & current_page=0 & indirect=1 { ptr:2 = *regaddr:2; export *:2 ptr; }
+memref: addr^",I"    is memaddr!=0 & addr    & current_page=0 & indirect=1 { ptr:2 = *addr:2;    export *:2 ptr; }
 
 # About direct page addressing:
-#  However, the least 10 bits produces by the assembler and placed in the
+#  For absolute addressing the assumption is that the most significant 5
+#  (or 6) bits of the P register correspond to the page, and the last 10 bits
+#  of the machine-instruction determine the location within that page.
+#
+#  the least 10 bits produces by the assembler and placed in the
 #  machine-instruction do not correspond exactly to the "real" memory address
 #  that is referenced. Bit 9 (the 10th bit) is complemented before it is placed
 #  in the address field of the instruction. The other 9 bits are left unchanged.
@@ -101,10 +107,11 @@ memref: addr^",I"    is raddr!=0 & addr    & page=0 & di=1 { ptr:2 = *addr:2;   
 #  addressing relative to the middle of the page.
 
 # current page, direct
-#                                                 drop lower 10 bits      use lower bits      from middle of page
-memref: loc      is addr & page=1 & di=0 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (~(addr & 0x200)); ] { ptr:2 = loc;    export *:2 ptr; }
+#                                                               drop lower 10 bits      invert bit 9        use lower 9 bits
+memref: loc      is addr & current_page=1 & indirect=0 [ loc = (inst_start & 0xfc00) + ((~addr) & 0x200) + (addr & 0x1ff); ] { ptr:2 = loc; export ptr; }
 # current page, indirect
-memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr & 0x1ff) + (~(addr & 0x200)); ] { ptr:2 = *loc:2; export *:2 ptr; }
+memref: loc^",I" is addr & current_page=1 & indirect=1 [ loc = (inst_start & 0xfc00) + ((~addr) & 0x200) + (addr & 0x1ff); ] { ptr:2 = *loc:2; export *:2 ptr; }
+
 
 # LDA A == NOP
 :NOP is opcode=0 unimpl
@@ -129,8 +136,8 @@ memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start & 0xfc00) + (addr &
 # -- execute
 
 # execute register content
-:EXE_D regaddr is di=0 & op_exe=0x380 & regaddr unimpl
-:EXE_I regaddr is di=1 & op_exe=0x380 & regaddr unimpl
+:EXE_D regaddr is indirect=0 & op_exe=0x380 & regaddr unimpl
+:EXE_I regaddr is indirect=1 & op_exe=0x380 & regaddr unimpl
 
 # -- shift / rotate
 
