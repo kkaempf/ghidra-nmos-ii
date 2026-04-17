@@ -99,9 +99,9 @@ memref: loc^",I" is addr & page=1 & di=1 [ loc = (inst_start + addr); ] { ptr:2 
 :STA memref is op_mem=6 & memref { memref = A; }
 :STB memref is op_mem=7 & memref { memref = B; }
 :JSM memref is op_mem=8 & memref { R = R + 1; *R:2 = P; call [memref]; }
-:ISZ memref is op_mem=9 & memref { local tmp:2 = memref + 1; *memref:2 = tmp; if (tmp == 0) goto inst_next2; }
+:ISZ memref is op_mem=9 & memref { local tmp:2 = memref + 1; memref = tmp; if (tmp == 0) goto inst_next2; }
 :AND memref is op_mem=10 & memref { A = A & memref; }
-:DSZ memref is op_mem=11 & memref { local tmp:2 = memref - 1; *memref:2 = tmp; if (tmp == 0) goto inst_next2; }
+:DSZ memref is op_mem=11 & memref { local tmp:2 = memref - 1; memref = tmp; if (tmp == 0) goto inst_next2; }
 :IOR memref is op_mem=12 & memref { A = A | memref; }
 :JMP memref is op_mem=13 & memref { goto [memref]; }
 
