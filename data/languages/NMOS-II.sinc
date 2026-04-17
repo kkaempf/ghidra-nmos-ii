@@ -108,7 +108,7 @@ memref: addr^",I"    is memaddr!=0 & addr    & current_page=0 & indirect=1 { ptr
 
 # current page, direct
 #                                                               drop lower 10 bits      invert bit 9        use lower 9 bits
-memref: loc      is addr & current_page=1 & indirect=0 [ loc = (inst_start & 0xfc00) + ((~addr) & 0x200) + (addr & 0x1ff); ] { ptr:2 = loc; export ptr; }
+memref: loc      is addr & current_page=1 & indirect=0 [ loc = (inst_start & 0xfc00) + ((~addr) & 0x200) + (addr & 0x1ff); ] { ptr:2 = *loc:2; export ptr; }
 # current page, indirect
 memref: loc^",I" is addr & current_page=1 & indirect=1 [ loc = (inst_start & 0xfc00) + ((~addr) & 0x200) + (addr & 0x1ff); ] { ptr:2 = *loc:2; export *:2 ptr; }
 
