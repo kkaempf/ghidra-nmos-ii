@@ -1,0 +1,22 @@
+#!/bin/sh
+#
+# test.sh <hex>
+echo "Testing" $@
+TMPDIR="."
+for i in $@; do \
+  echo -n "$i "; \
+  j=$(basename $i .hex); \
+  addr=$(cut -d: -f1 $i); \
+  decaddr=$((16#$addr)); \
+  addr=$(($decaddr*2)); \
+  hex=$(cut -d: -f2 $i); \
+  asm=$j.out; \
+  $(sleigh-lift disassemble /abuild/projects/Ghidra/ghidra-nmos-ii/data/languages/NMOS-II.sla $hex -a $addr > $asm); \
+  diff -wu $j.asm $asm; \
+  if [ $? -ne 0 ]; then \
+    echo "fail"; \
+    break; \
+  else \
+    echo "pass"; \
+  fi;
+done
