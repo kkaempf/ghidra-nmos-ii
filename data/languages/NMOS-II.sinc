@@ -33,8 +33,15 @@ define register offset=0x40 size=2  [ loc ];
 # helper bit shift/rotate
 define register offset=0x42 size=1  [ bits ];
 
-# condition flags
-define register offset=0x50 size=1   [ DC_F HLT_F FLG_F STS_F OV_F REG_E ];
+# condition flags:
+#  - DC: decimal carry (coming from EMC)
+#  - HTL: halt
+#  - FLG: flag
+#  - STS: status
+#  - OV: Overflow
+#  - E: Extend (16 bit arithmetic carry)
+
+define register offset=0x50 size=1   [ DC_F HLT_F FLG_F STS_F OV_F E_F ];
 
 #--------------------------------------------------------------------------
 # Macros
@@ -227,7 +234,7 @@ define token alter_op(16)
   alter_skip = (0,5) signed
 ;
 
-# alter target
+# alter target, skip of 0 is "repeat"
 atarget: loc is alter_skip [ loc = inst_start + alter_skip; ] { ptr:2 = loc; export ptr; }
 
 hcs: "" is hold = 0 & clear_set = 0 { local tmp:1 = 0; export tmp; }
@@ -268,8 +275,8 @@ macro alter_and_skip(val,mask,xor,cs,target) {
 :SOC atarget^hcs is op815=0xf6 & atarget & hcs { alter_and_skip(OV_F,0x0001,0x0000,hcs,atarget); }
 :SOS atarget^hcs is op815=0xf7 & atarget & hcs { alter_and_skip(OV_F,0x0001,0x0000,hcs,atarget); }
 # skip if extend register
-:SEC atarget^hcs is op815=0xfe & atarget & hcs { alter_and_skip(REG_E,0xf,0,hcs,atarget); }
-:SES atarget^hcs is op815=0xff & atarget & hcs { alter_and_skip(REG_E,0xf,0xf,hcs,atarget); }
+:SEC atarget^hcs is op815=0xfe & atarget & hcs { alter_and_skip(E_F,0xf,0,hcs,atarget); }
+:SES atarget^hcs is op815=0xff & atarget & hcs { alter_and_skip(E_F,0xf,0xf,hcs,atarget); }
 
 # = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = = =
 # IOC only
