@@ -1,5 +1,9 @@
 ##VERSION: 2.0
+certification.manifest||LICENSE||||END|
 LICENSE||LICENSE||||END|
+Makefile||LICENSE||||END|
+Module.manifest||LICENSE||||END|
+README.md||LICENSE||||END|
 data||LICENSE||||END|
 data/manuals||LICENSE||||END|
 data/manuals/NMOS-II.idx||LICENSE||||END|
@@ -10,9 +14,6 @@ data/languages/NMOS-II.sla||LICENSE||||END|
 data/languages/NMOS-II.cspec||LICENSE||||END|
 data/languages/NMOS-II.slaspec~||LICENSE||||END|
 data/languages/NMOS-II.slaspec||LICENSE||||END|
-Module.manifest||LICENSE||||END|
-certification.manifest||LICENSE||||END|
-README.md||LICENSE||||END|
 tests/jmp.hex||LICENSE||||END|
 tests/jsm.hex||LICENSE||||END|
 tests/jsm.asm||LICENSE||||END|
