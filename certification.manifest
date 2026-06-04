@@ -10,6 +10,7 @@ data/manuals/NMOS-II.idx||LICENSE||||END|
 data/languages||LICENSE||||END|
 data/languages/NMOS-II.ldefs||LICENSE||||END|
 data/languages/NMOS-II.pspec||LICENSE||||END|
+data/languages/NMOS-II-bpc.pspec||LICENSE||||END|
 data/languages/NMOS-II.sla||LICENSE||||END|
 data/languages/NMOS-II.cspec||LICENSE||||END|
 data/languages/NMOS-II.slaspec~||LICENSE||||END|
