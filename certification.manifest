@@ -13,3 +13,9 @@ data/languages/NMOS-II.slaspec||LICENSE||||END|
 Module.manifest||LICENSE||||END|
 certification.manifest||LICENSE||||END|
 README.md||LICENSE||||END|
+tests/jmp.hex||LICENSE||||END|
+tests/jsm.hex||LICENSE||||END|
+tests/jsm.asm||LICENSE||||END|
+tests/jmp.asm||LICENSE||||END|
+tests/runtests||LICENSE||||END|
+tests/Makefile||LICENSE||||END|
