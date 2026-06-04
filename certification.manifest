@@ -22,5 +22,7 @@ tests/jmp.hex||LICENSE||||END|
 tests/jsm.hex||LICENSE||||END|
 tests/jsm.asm||LICENSE||||END|
 tests/jmp.asm||LICENSE||||END|
+tests/jmp.out||LICENSE||||END|
+tests/jsm.out||LICENSE||||END|
 tests/runtests||LICENSE||||END|
 tests/Makefile||LICENSE||||END|
