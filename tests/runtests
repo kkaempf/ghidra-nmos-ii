@@ -11,7 +11,7 @@ for i in $@; do \
   addr=$(($decaddr*2)); \
   hex=$(cut -d: -f2 $i); \
   asm=$j.out; \
-  $(sleigh-lift disassemble /abuild/projects/Ghidra/ghidra-nmos-ii/data/languages/NMOS-II.sla $hex -a $addr > $asm); \
+  $(sleigh-lift disassemble /abuild/projects/Ghidra/ghidra-nmos-ii/data/languages/NMOS-II-bpc.sla $hex -a $addr > $asm); \
   diff -wu $j.asm $asm; \
   if [ $? -ne 0 ]; then \
     echo "fail"; \
