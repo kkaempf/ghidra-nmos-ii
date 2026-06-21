@@ -137,7 +137,7 @@ memref: loc^",I" is addr & current_page=1 & indirect=1 [ loc = (inst_start & 0xf
 
 
 # LDA A == NOP
-:NOP is opcode=0 unimpl
+:NOP is opcode=0 { }
 
 # -- memory reference
 
