@@ -179,8 +179,8 @@ shift: bits is count [ bits = count + 1; ] { export *[const]:1 bits; }
 :AAR shift is op1215=0xf & op911=0 & op68 = 4 & op45 = 0 & shift { arith_shift_right(A, shift); }
 :ABR shift is op1215=0xf & op911=4 & op68 = 4 & op45 = 0 & shift { arith_shift_right(B, shift); }
 # pseudo-op 'clear': shift right by 16
-:CLA is op1215=0xf & op911=0 & op68 = 5 & op45 = 0 & count=0xf { A = 0; }
-:CLB is op1215=0xf & op911=4 & op68 = 5 & op45 = 0 & count=0xf { B = 0; }
+:CLA       is op1215=0xf & op911=0 & op68 = 5 & op45 = 0 & count = 15 { A = 0; }
+:CLB       is op1215=0xf & op911=4 & op68 = 5 & op45 = 0 & count = 15 { B = 0; }
 :SAR shift is op1215=0xf & op911=0 & op68 = 5 & op45 = 0 & shift { A = A >> shift; }
 :SBR shift is op1215=0xf & op911=4 & op68 = 5 & op45 = 0 & shift { B = B >> shift; }
 :SAL shift is op1215=0xf & op911=0 & op68 = 6 & op45 = 0 & shift { A = A << shift; }
