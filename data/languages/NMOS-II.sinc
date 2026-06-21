@@ -212,11 +212,8 @@ starget: loc is skip [ loc = inst_start + skip; ] { ptr:2 = loc; export *:2 ptr;
 
 # -- return
 
-# return target
-rtarget: skip is skip { local tmp:2 = *R + skip; export tmp; }
-
-:RET rtarget      is op1215=0xf & op911=0 & op68=2 & rtarget { R = R - 1; return [rtarget]; }
-:RET rtarget^",P" is op1215=0xf & op911=0 & op68=3 & rtarget { R = R - 1; return [rtarget]; }
+:RET skip      is op1215=0xf & op911=0 & op68=2 & skip { tmp:2 = *R; R = R - 1; tmp = tmp + skip; return [tmp]; }
+:RET skip^",P" is op1215=0xf & op911=0 & op68=3 & skip { tmp:2 = *R; R = R - 1; tmp = tmp + skip; return [tmp]; }
 
 # -- complement
 
