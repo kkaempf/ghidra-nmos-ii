@@ -1,10 +1,10 @@
 all: data/languages/NMOS-II-bpc.sla data/languages/NMOS-II-hybrid.sla test
 
-data/languages/NMOS-II-hybrid.sla: data/languages/NMOS-II-hybrid.slaspec data/languages/NMOS-II.sinc 
+data/languages/NMOS-II-hybrid.sla: data/languages/NMOS-II-hybrid.slaspec data/languages/NMOS-II.sinc data/languages/NMOS-II.ldefs data/languages/NMOS-II.cspec 
 	/abuild/projects/Ghidra/ghidra/Ghidra/Features/Decompiler/src/decompile/cpp/sleigh_dbg $<
 	sleigh $< $@
 
-data/languages/NMOS-II-bpc.sla: data/languages/NMOS-II-bpc.slaspec data/languages/NMOS-II.sinc 
+data/languages/NMOS-II-bpc.sla: data/languages/NMOS-II-bpc.slaspec data/languages/NMOS-II.sinc data/languages/NMOS-II.ldefs data/languages/NMOS-II.cspec 
 	/abuild/projects/Ghidra/ghidra/Ghidra/Features/Decompiler/src/decompile/cpp/sleigh_dbg $<
 	sleigh $< $@
 
