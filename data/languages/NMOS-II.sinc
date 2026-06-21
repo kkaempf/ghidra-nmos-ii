@@ -65,7 +65,7 @@ macro eval_and_skip_nz(expr,target) {
   if (expr != 0) goto <skip>;
   goto <continue>;
 <skip>
-  goto [target];
+  goto target;
 <continue>
 }
 
@@ -73,7 +73,7 @@ macro eval_and_skip_z(expr,target) {
   if (expr == 0) goto <skip>;
   goto <continue>;
 <skip>
-  goto [target];
+  goto target;
 <continue>
 }
 
@@ -110,9 +110,9 @@ attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  
 
 # base page, direct
 #   register reference
-memref: regaddr      is memaddr =0 & regaddr & current_page=0 & indirect=0 { ptr:2 = regaddr;    export ptr; }
+memref: regaddr      is memaddr =0 & regaddr & current_page=0 & indirect=0 { export regaddr; }
 #   memory reference
-memref: addr         is memaddr!=0 & addr    & current_page=0 & indirect=0 { ptr:2 = addr;       export *:2 ptr; }
+memref: addr         is memaddr!=0 & addr    & current_page=0 & indirect=0 { export *:2 addr; }
 # base page, indirect
 memref: regaddr^",I" is memaddr =0 & regaddr & current_page=0 & indirect=1 { ptr:2 = *regaddr:2; export *:2 ptr; }
 memref: addr^",I"    is memaddr!=0 & addr    & current_page=0 & indirect=1 { ptr:2 = *addr:2;    export *:2 ptr; }
@@ -154,7 +154,7 @@ memref: loc^",I" is addr & current_page=1 & indirect=1 [ loc = (inst_start & 0xf
 :AND memref is op_mem=10 & memref { A = A & memref; }
 :DSZ memref is op_mem=11 & memref { local tmp:2 = memref - 1; memref = tmp; if (tmp == 0) goto inst_next2; }
 :IOR memref is op_mem=12 & memref { A = A | memref; }
-:JMP memref is op_mem=13 & memref { goto [memref]; }
+:JMP memref is op_mem=13 & memref { goto memref; }
 
 # -- execute
 
@@ -213,10 +213,10 @@ starget: loc is skip [ loc = inst_start + skip; ] { ptr:2 = loc; export *:2 ptr;
 # -- return
 
 # return target
-rtarget: skip is skip { local tmp:2 = R + skip; export tmp; }
+rtarget: skip is skip { local tmp:2 = *R + skip; export tmp; }
 
-:RET rtarget is op1215=0xf & op911=0 & op68=2 & rtarget { R = R - 1; goto [rtarget]; }
-:RET rtarget^",P" is op1215=0xf & op911=0 & op68=3 & rtarget { R = R - 1; goto [rtarget]; }
+:RET rtarget      is op1215=0xf & op911=0 & op68=2 & rtarget { R = R - 1; return [rtarget]; }
+:RET rtarget^",P" is op1215=0xf & op911=0 & op68=3 & rtarget { R = R - 1; return [rtarget]; }
 
 # -- complement
 
@@ -255,7 +255,7 @@ macro alter_and_skip(val,mask,xor,cs,target) {
   val = val | mask;
 <check>
   if (bit == 0) goto <continue>; # no skip
-  goto [target];
+  goto target;
 <continue>
 }
 
