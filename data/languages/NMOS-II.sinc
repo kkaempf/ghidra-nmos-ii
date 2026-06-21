@@ -112,10 +112,10 @@ attach variables [ regaddr ] [ A B P R R4 R5 R6 R7 IV PA W  DMAPA DMAMA DMAC C  
 #   register reference
 memref: regaddr      is memaddr =0 & regaddr & current_page=0 & indirect=0 { export regaddr; }
 #   memory reference
-memref: addr         is memaddr!=0 & addr    & current_page=0 & indirect=0 { export *:2 addr; }
+memref: addr         is memaddr!=0 & addr    & current_page=0 & indirect=0 { ptr:2 = addr; export ptr; }
 # base page, indirect
-memref: regaddr^",I" is memaddr =0 & regaddr & current_page=0 & indirect=1 { ptr:2 = *regaddr:2; export *:2 ptr; }
-memref: addr^",I"    is memaddr!=0 & addr    & current_page=0 & indirect=1 { ptr:2 = *addr:2;    export *:2 ptr; }
+memref: regaddr^",I" is memaddr =0 & regaddr & current_page=0 & indirect=1 { ptr:2 = regaddr:2; export *:2 ptr; }
+memref: addr^",I"    is memaddr!=0 & addr    & current_page=0 & indirect=1 { ptr:2 = addr:2;    export *:2 ptr; }
 
 # About direct page addressing:
 #  For absolute addressing the assumption is that the most significant 5
@@ -149,7 +149,7 @@ memref: loc^",I" is addr & current_page=1 & indirect=1 [ loc = (inst_start & 0xf
 :ADB memref is op_mem=5 & memref { B = B + memref; }
 :STA memref is op_mem=6 & memref { memref = A; }
 :STB memref is op_mem=7 & memref { memref = B; }
-:JSM memref is op_mem=8 & memref { R = R + 1; *R:2 = P; call [memref]; }
+:JSM memref is op_mem=8 & memref { R = R + 1; *R:2 = P; call memref; }
 :ISZ memref is op_mem=9 & memref { local tmp:2 = memref + 1; memref = tmp; if (tmp == 0) goto inst_next2; }
 :AND memref is op_mem=10 & memref { A = A & memref; }
 :DSZ memref is op_mem=11 & memref { local tmp:2 = memref - 1; memref = tmp; if (tmp == 0) goto inst_next2; }
