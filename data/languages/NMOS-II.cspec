@@ -29,8 +29,10 @@
   <default_proto>
     <prototype name="default" extrapop="2" stackshift="2">
       <input>
-        <pentry minsize="2" maxsize="4" align="2">
+        <pentry minsize="2" maxsize="2" align="2">
           <register name="A"/>
+        </pentry>
+        <pentry minsize="2" maxsize="2" align="2">
           <register name="B"/>
         </pentry>
       </input>
