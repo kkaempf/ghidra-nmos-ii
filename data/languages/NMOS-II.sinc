@@ -136,8 +136,10 @@ memref: loc      is addr & current_page=1 & indirect=0 [ loc = (inst_start & 0xf
 memref: loc^",I" is addr & current_page=1 & indirect=1 [ loc = (inst_start & 0xfc00) + ((~addr) & 0x200) + (addr & 0x1ff); ] { ptr:2 = *loc:2; export *:2 ptr; }
 
 
+define pcodeop nop;
+
 # LDA A == NOP
-:NOP is opcode=0 { }
+:NOP is opcode=0 { nop(); }
 
 # -- memory reference
 
